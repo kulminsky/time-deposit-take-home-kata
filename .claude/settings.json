@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "deny": [
+      "Edit(/java/src/main/java/org/ikigaidigital/TimeDeposit.java)",
+      "Bash(git push *)",
+      "Bash(git reset --hard *)"
+    ]
+  },
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "mkdir -p \"$CLAUDE_PROJECT_DIR/docs/ai\" && jq -r --arg ts \"$(date '+%Y-%m-%d %H:%M:%S %Z')\" '\"\\n## \\($ts) · session \\((.session_id // \"\")[0:8])\\n\\n\\(.prompt)\\n\"' >> \"$CLAUDE_PROJECT_DIR/docs/ai/prompt-log.md\" || exit 1"
+          }
+        ]
+      }
+    ]
+  }
+}
