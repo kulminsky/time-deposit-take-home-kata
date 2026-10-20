@@ -27,8 +27,8 @@ cd java
 
 This starts Postgres from [`compose.yaml`](compose.yaml) (Spring Boot's Docker Compose support), applies the
 Flyway migrations plus sample data (`local` profile), and serves the API on http://localhost:8080.
-The Postgres container is stopped when the application stops and keeps its data; `docker compose down`
-(in `java/`) removes it, so the next start begins again from the sample data.
+The Postgres container is stopped when the application stops and keeps its data in a Docker volume;
+`docker compose down -v` (in `java/`) removes both, so the next start begins again from the sample data.
 
 ## Call the endpoints with Swagger UI
 

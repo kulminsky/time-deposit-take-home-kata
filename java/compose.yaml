@@ -1,6 +1,6 @@
 # Local Postgres for `./mvnw spring-boot:run`. Spring Boot (spring-boot-docker-compose) starts it on start-up,
 # stops it on shutdown and connects to it; no datasource settings are needed.
-# Data survives restarts; `docker compose down` removes the container and its data.
+# Data survives restarts; `docker compose down -v` removes the container and its data volume.
 # The credentials are for this local container only.
 name: time-deposit
 services:
@@ -14,3 +14,10 @@ services:
     ports:
       # Random host port, so it does not clash with a local Postgres; Spring Boot reads it from Docker.
       - '5432'
+    volumes:
+      # A named volume (Postgres 18 images keep their data under /var/lib/postgresql), so restarts do not
+      # leave anonymous volumes behind.
+      - postgres-data:/var/lib/postgresql
+
+volumes:
+  postgres-data:
