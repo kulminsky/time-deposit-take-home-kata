@@ -125,6 +125,9 @@ org.ikigaidigital
   (`BasicPlanInterestRule`, `StudentPlanInterestRule`, `PremiumPlanInterestRule`), looked up by exact plan type
   in `InterestRules`. A new plan is a new rule class registered in `InterestRules.defaults()`; the calculator
   does not change. `TimeDepositCalculator` still has its no-arg constructor and its `updateBalance` signature.
+  Limits: a rule only sees the `TimeDeposit` (the fixed `updateBalance` signature passes nothing else), so a rule
+  that needs withdrawals or a date would need a new input passed to the rules. Each plan type has one rule, so
+  combining rules for one plan (a base rate plus a bonus) means a composite rule class.
 - **Concurrent updates.** The balance update reads all deposits with `SELECT ... FOR NO KEY UPDATE` (ordered by
   id) and writes them in the same transaction. A second update waits for the first to commit and then adds its
   month on top, so no update is lost; reads are never blocked. `BalanceUpdateLockingIT` proves this.
