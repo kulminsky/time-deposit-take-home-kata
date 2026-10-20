@@ -34,3 +34,21 @@ Read README.md and the java/ code. Plan the full solution: Spring Boot 4.1.1, Ja
 Add Docker so anyone can run the app with 'docker compose up'. 
 No local JDK needed.
 
+
+## 2026-10-20 21:22:40
+
+Review all changes since c4ea358 like a strict senior reviewer. List findings by severity, don't change anything.
+
+
+## 2026-10-20 21:36:43
+
+No fixes for now, the review is enough.
+
+
+## 2026-10-20 21:38:35
+
+Fix 1, 2, 3, 5, and 9, plus the tests, Dockerfile, AI_USAGE wording, and the in-memory comment. 
+1 - keep the new behaviour. 
+2 - keep days as is and write it as an assumption.
+9 - a short note in java/README is enough.
+
