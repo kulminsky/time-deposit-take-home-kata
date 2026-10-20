@@ -33,3 +33,11 @@ jobs:
 
       - name: Unit tests, integration tests and package
         run: ./mvnw -B verify
+
+      # The same `docker compose up` a reviewer runs without a JDK: the image builds and the API answers.
+      - name: Docker Compose smoke test
+        run: |
+          docker compose up --build --detach --wait
+          curl -fsS --retry 30 --retry-connrefused --retry-delay 2 http://localhost:8080/time-deposits \
+            || { docker compose logs; exit 1; }
+          docker compose down -v
