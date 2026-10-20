@@ -4,11 +4,14 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.json.JsonCompareMode;
 import org.springframework.test.web.servlet.client.RestTestClient;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.method.HandlerMethod;
+import org.springframework.web.servlet.function.RouterFunction;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 import org.yaml.snakeyaml.Yaml;
@@ -16,6 +19,7 @@ import org.yaml.snakeyaml.Yaml;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -35,6 +39,9 @@ class TimeDepositApiIT {
 
     @Autowired
     private RequestMappingHandlerMapping handlerMapping;
+
+    @Autowired
+    private ApplicationContext applicationContext;
 
     @Test
     void listsAllTimeDepositsWithTheirWithdrawals() {
@@ -91,13 +98,14 @@ class TimeDepositApiIT {
     void applicationHasExactlyTheTwoEndpointsOfTheContract() {
         List<String> applicationEndpoints = handlerMapping.getHandlerMethods().entrySet().stream()
             .filter(entry -> isApplicationHandler(entry.getValue()))
-            .map(entry -> describe(entry.getKey()))
+            .flatMap(entry -> endpoints(entry.getKey()))
             .sorted()
             .toList();
 
         assertThat(applicationEndpoints).containsExactly(
             "GET /time-deposits",
             "POST /time-deposits/balance-updates");
+        assertThat(applicationContext.getBeanNamesForType(RouterFunction.class)).isEmpty();
     }
 
     @Test
@@ -137,8 +145,13 @@ class TimeDepositApiIT {
         return handlerMethod.getBeanType().getPackageName().startsWith("org.ikigaidigital");
     }
 
-    private static String describe(RequestMappingInfo mapping) {
-        return mapping.getMethodsCondition().getMethods().iterator().next() + " "
-            + mapping.getPathPatternsCondition().getPatternValues().iterator().next();
+    // One entry per HTTP method and path of the mapping; a mapping without methods accepts any method.
+    private static Stream<String> endpoints(RequestMappingInfo mapping) {
+        Set<RequestMethod> methods = mapping.getMethodsCondition().getMethods();
+        List<String> methodNames = methods.isEmpty()
+            ? List.of("ANY")
+            : methods.stream().map(RequestMethod::name).toList();
+        return methodNames.stream().flatMap(method -> mapping.getPathPatternsCondition().getPatternValues().stream()
+            .map(path -> method + " " + path));
     }
 }
