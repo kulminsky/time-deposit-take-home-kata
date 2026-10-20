@@ -67,7 +67,8 @@ again from the sample data.
 | 7 | basic | 120 | 1234567.00 | 1235595.81 | 1% a year |
 | 8 | gold | 100 | 500.00 | 500.00 | unknown plan type |
 
-Every POST adds another month (the update is not idempotent, which is why it is a POST).
+Every POST adds another month (the update is not idempotent, which is why it is a POST). `days` stays the
+same, so every POST applies the same rules (see Assumptions).
 
 The same with curl:
 
@@ -138,6 +139,10 @@ Each one is also written as a comment in the code where it applies.
 - "No interest for the first 30 days" belongs to the three existing plans: day 31 is the first day with interest.
   Student: one year is 365 days, so day 366 and later earn nothing. Premium: day 46 is the first day with interest.
 - Withdrawals are history only: they do not change balances or interest (the legacy calculator ignores them).
+- The balance update changes balances only, never `days`: the legacy calculator does not change it and
+  `TimeDeposit` has no setter for it, so `days` is kept up to date outside this application. Until it changes,
+  every POST applies the same day rules (a basic deposit at 30 days keeps earning nothing, a student deposit at
+  365 days keeps earning 3% a year).
 - Balances are stored with 2 decimals. The legacy `TimeDeposit` keeps the balance as a `double`; it is converted
   to and from `NUMERIC(19,2)` exactly for balances below 10^13.
 - The update is a `POST` that returns `204` without a body; `GET` shows the new balances.

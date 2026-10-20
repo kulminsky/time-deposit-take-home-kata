@@ -42,6 +42,7 @@ paths:
       description: |
         Adds one month of interest to the balance of every time deposit, in one transaction.
         Not idempotent: each call adds another month. Concurrent calls are applied one after the other.
+        Only balances change: `days` stays as it is, so each call applies the same day rules.
         Use `GET /time-deposits` to see the new balances.
       responses:
         '204':
@@ -64,10 +65,11 @@ components:
           type: number
           description: Current balance, 2 decimals.
           example: 1000.83
+        # Assumption: days is kept up to date outside this API; the balance update does not change it.
         days:
           type: integer
           format: int32
-          description: Age of the deposit in days.
+          description: Age of the deposit in days. The balance update does not change it.
           example: 31
         withdrawals:
           type: array
