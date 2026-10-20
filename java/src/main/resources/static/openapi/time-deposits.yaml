@@ -1,0 +1,92 @@
+# Contract first: this file is the source of the API. The Maven build generates the Spring interface
+# (TimeDepositsApi) and the DTOs from it, and Swagger UI shows this exact file.
+# The README allows exactly two endpoints, so there are exactly two operations.
+openapi: 3.0.3
+info:
+  title: XA Bank Time Deposit API
+  version: 1.0.0
+  description: |
+    Time deposits of XA Bank.
+
+    1. `GET /time-deposits` lists every time deposit with its withdrawals.
+    2. `POST /time-deposits/balance-updates` adds one month of interest to the balance of every time deposit.
+
+    Interest per month: basic 1% a year, student 3% a year (none after 365 days), premium 5% a year
+    (from day 46). No plan earns interest in its first 30 days; other plan types earn none.
+tags:
+  - name: TimeDeposits
+    description: Time deposits and their balances
+paths:
+  /time-deposits:
+    get:
+      tags: [ TimeDeposits ]
+      operationId: listTimeDeposits
+      summary: List all time deposits
+      description: All time deposits ordered by id, each with its withdrawals (oldest first).
+      responses:
+        '200':
+          description: All time deposits
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TimeDeposit'
+  # Assumption: updating the balances is modelled as creating a "balance update" (POST), not as PUT,
+  # because it is not idempotent: every call adds another month of interest.
+  /time-deposits/balance-updates:
+    post:
+      tags: [ TimeDeposits ]
+      operationId: updateAllBalances
+      summary: Update the balances of all time deposits
+      description: |
+        Adds one month of interest to the balance of every time deposit, in one transaction.
+        Not idempotent: each call adds another month. Concurrent calls are applied one after the other.
+        Use `GET /time-deposits` to see the new balances.
+      responses:
+        '204':
+          description: All balances were updated
+components:
+  schemas:
+    TimeDeposit:
+      type: object
+      required: [ id, planType, balance, days, withdrawals ]
+      properties:
+        id:
+          type: integer
+          format: int32
+          example: 1
+        planType:
+          type: string
+          description: Plan type, matched exactly (case-sensitive); `basic`, `student` and `premium` earn interest.
+          example: basic
+        balance:
+          type: number
+          description: Current balance, 2 decimals.
+          example: 1000.83
+        days:
+          type: integer
+          format: int32
+          description: Age of the deposit in days.
+          example: 31
+        withdrawals:
+          type: array
+          items:
+            $ref: '#/components/schemas/Withdrawal'
+    # Assumption: a withdrawal is nested in its time deposit, so timeDepositId is not repeated here.
+    Withdrawal:
+      type: object
+      required: [ id, amount, date ]
+      properties:
+        id:
+          type: integer
+          format: int32
+          example: 1
+        amount:
+          type: number
+          description: Amount withdrawn, 2 decimals.
+          example: 100.00
+        date:
+          type: string
+          format: date
+          example: '2026-01-15'
