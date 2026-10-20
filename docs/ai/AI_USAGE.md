@@ -9,7 +9,7 @@ repository, how the work was done, and which parts were AI-assisted.
 |---|---|
 | [Claude Code](https://claude.com/claude-code), desktop app (Code tab) | Agent that read the code, planned, wrote code and tests, ran Maven and Docker, and made the commits |
 | Claude Opus 5.5 (`claude-opus-5-5`) | Model behind the agent |
-| Claude Code plan mode | Read-only planning; the plan was approved (and corrected once) before any code changed |
+| Claude Code plan mode | Read-only planning and the final review; the plan was approved (and corrected once) before any code changed |
 | Claude Code subagent `code-reviewer` | Review against the project rules before larger commits; it reports and never edits or commits |
 | Built-in browser of the Claude desktop app | Checking Swagger UI of the locally running application |
 
@@ -48,6 +48,8 @@ entries were added by hand because they were sent before the hook existed. Two t
 - An answer given while rejecting a plan in plan mode is not a prompt, so the hook did not record it. After the
   first plan the reply was: "Use the latest stable versions that work with Spring Boot 4.1.1, lock the rows when
   updating balances so two POSTs can't overlap, and keep the CI step."
+- A few entries are replies the developer picked from the buttons the desktop app offers at the end of a turn
+  (for example "Leave the CI workflow as it is."), not typed text.
 
 ## How the work was done
 
@@ -70,6 +72,23 @@ entries were added by hand because they were sent before the hook existed. Two t
 6. **Run it.** The agent started the application with `./mvnw spring-boot:run`, called GET, POST and GET again with
    curl, checked the balances against the expected values, and opened Swagger UI in the Claude desktop app's
    built-in browser to run the GET request there.
+7. **Docker.** On request, the agent added a `Dockerfile` and an `app` service in `compose.yaml`, so
+   `docker compose up` runs everything without a local JDK, plus a CI step that smoke-tests that image.
+8. **Final review, then fixes.** The developer asked for a strict senior review of everything since `c4ea358`
+   without changes. In plan mode the agent read the whole diff and reported 2 major findings, 7 minor and 8 nits
+   (nothing critical). The developer chose what to fix and how:
+   - the `null` plan type change was kept, documented as the one deliberate change and pinned against the legacy
+     copy;
+   - `days` stays unchanged by the update and is written down as an assumption;
+   - the locked read and the write now require a transaction;
+   - money columns became `NUMERIC(15,2)` so balances convert to `double` and back exactly;
+   - smaller test, Dockerfile and doc fixes.
+
+   While checking the Docker run, the agent found that the CI smoke test did not retry on a connection reset.
+   The developer first left it, then asked for `--retry-all-errors`. Each fix has its own commits, and the full
+   build and a Docker Compose run passed afterwards. Left open on purpose: a CI check that `TimeDeposit.java` and
+   the other language folders are unchanged, the sample data as a versioned migration, and the prompt-log hook
+   writing into a tracked file.
 
 ## Which parts were AI-assisted, and why
 
@@ -81,6 +100,7 @@ entries were added by hand because they were sent before the hook existed. Two t
 | Production code (domain, application, adapters, config, contract, migrations) | Written by the agent | Set the requirements through the approved plan |
 | Integration tests (Testcontainers), ArchUnit rules | Written by the agent | |
 | CI workflow, Dockerfile and Docker Compose, docs | Written by the agent | |
+| Final review and the fixes after it | Review written by the agent in plan mode; fixes written and tested by the agent | Chose which findings to fix and how |
 | Pushing to GitHub | Not allowed for the agent (deny rule) | Pushes |
 
 Why an agent: most of the work is careful, mechanical and easy to verify (tests that pin exact doubles,
