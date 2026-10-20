@@ -21,7 +21,7 @@ Read `CLAUDE.md` first. It is the source of truth; check every rule in it, inclu
 4. `c#/`, `kotlin/`, `python/` and `typescript/` are unchanged: `git diff c4ea358 --stat -- c# kotlin python typescript` must be empty.
 5. Ambiguous decisions (rounding, plan names, day limits, table and column names, HTTP method choices) have an assumption written as a code comment.
 6. Commits since `c4ea358` use Conventional Commits (`feat:`, `fix:`, `test:`, `refactor:`, `docs:`, `chore:`) and each commit does one thing.
-7. If Java code changed, run `mvn -q test` in `java/` and report failures. If Docker is not available for Testcontainers, say so; don't count it as a failure.
+7. If Java code changed, run `./mvnw -q verify` in `java/` (unit tests, Testcontainers integration tests and packaging) and report failures. If Docker is not available, the integration tests cannot run: say so, don't count it as a failure, and run `./mvnw -q test` for the unit tests instead.
 
 Also report real bugs, missing tests for the interest rules, and clear clean-code or hexagonal-architecture problems. Don't report style preferences.
 
