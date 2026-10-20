@@ -3,6 +3,7 @@ package org.ikigaidigital.adapter.out.persistence;
 import org.ikigaidigital.TimeDeposit;
 import org.ikigaidigital.application.port.out.TimeDepositRepository;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
@@ -23,15 +24,19 @@ class TimeDepositPersistenceAdapter implements TimeDepositRepository {
         return jpaRepository.findAllByOrderByIdAsc().stream().map(TimeDepositPersistenceAdapter::toDomain).toList();
     }
 
+    // MANDATORY: the row locks last only as long as the caller's transaction, so without one this fails
+    // instead of returning rows that are no longer locked.
     @Override
+    @Transactional(propagation = Propagation.MANDATORY)
     public List<TimeDeposit> findAllForUpdate() {
         return jpaRepository.findAllForUpdate().stream().map(TimeDepositPersistenceAdapter::toDomain).toList();
     }
 
-    // Joins the caller's transaction, so the entities locked by findAllForUpdate() are already managed:
-    // getReferenceById returns them without a new query, and Hibernate writes the changed balances on commit.
+    // MANDATORY: runs in the caller's transaction, after findAllForUpdate(), so the entities locked there are
+    // already managed: getReferenceById returns them without a new query, and Hibernate writes the changed
+    // balances on commit. Without a transaction this fails instead of writing rows it never locked.
     @Override
-    @Transactional
+    @Transactional(propagation = Propagation.MANDATORY)
     public void updateBalances(List<TimeDeposit> timeDeposits) {
         for (TimeDeposit timeDeposit : timeDeposits) {
             jpaRepository.getReferenceById(timeDeposit.getId()).setBalance(toDecimal(timeDeposit.getBalance()));

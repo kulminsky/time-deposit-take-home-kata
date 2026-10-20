@@ -1,6 +1,7 @@
 package org.ikigaidigital.application;
 
 import org.ikigaidigital.TestcontainersConfiguration;
+import org.ikigaidigital.TimeDeposit;
 import org.ikigaidigital.application.port.in.UpdateAllBalancesUseCase;
 import org.ikigaidigital.application.port.out.TimeDepositRepository;
 import org.junit.jupiter.api.AfterEach;
@@ -10,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.transaction.IllegalTransactionStateException;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.sql.DataSource;
@@ -19,6 +21,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ExecutorService;
@@ -91,6 +94,16 @@ class BalanceUpdateLockingIT {
 
             assertThat(this.<Boolean>run(this::lockRowFromAnotherConnection)).isTrue();
         });
+    }
+
+    @Test
+    void lockingReadAndBalanceWriteFailWithoutATransaction() {
+        assertThatExceptionOfType(IllegalTransactionStateException.class)
+            .isThrownBy(timeDepositRepository::findAllForUpdate);
+        assertThatExceptionOfType(IllegalTransactionStateException.class)
+            .isThrownBy(() -> timeDepositRepository.updateBalances(List.of(new TimeDeposit(1, "basic", 2000.00, 31))));
+
+        assertThat(balance(1)).isEqualByComparingTo("1000.00");
     }
 
     @Test
