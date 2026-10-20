@@ -129,7 +129,8 @@ org.ikigaidigital
   id) and writes them in the same transaction. A second update waits for the first to commit and then adds its
   month on top, so no update is lost; reads are never blocked. `BalanceUpdateLockingIT` proves this.
 - **Database.** Flyway creates the README tables with their exact camelCase names (`"timeDeposits"`,
-  `"withdrawals"`, quoted in Postgres). Money columns are `NUMERIC(19,2)`.
+  `"withdrawals"`, quoted in Postgres). Money columns are `NUMERIC(15,2)`: at most 15 digits, which a `double`
+  keeps exactly.
 
 ## Assumptions
 
@@ -143,8 +144,9 @@ Each one is also written as a comment in the code where it applies.
   `TimeDeposit` has no setter for it, so `days` is kept up to date outside this application. Until it changes,
   every POST applies the same day rules (a basic deposit at 30 days keeps earning nothing, a student deposit at
   365 days keeps earning 3% a year).
-- Balances are stored with 2 decimals. The legacy `TimeDeposit` keeps the balance as a `double`; it is converted
-  to and from `NUMERIC(19,2)` exactly for balances below 10^13.
+- Balances are stored with 2 decimals. The legacy `TimeDeposit` keeps the balance as a `double`, so the column is
+  `NUMERIC(15,2)`: it only holds balances below 10^13, and every stored balance converts to a `double` and back
+  exactly.
 - The update is a `POST` that returns `204` without a body; `GET` shows the new balances.
 - Withdrawals are nested in their time deposit (without `timeDepositId`) and listed oldest first; deposits are
   listed by id.

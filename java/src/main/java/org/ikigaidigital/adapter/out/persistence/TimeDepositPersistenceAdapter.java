@@ -43,8 +43,9 @@ class TimeDepositPersistenceAdapter implements TimeDepositRepository {
         }
     }
 
-    // The legacy TimeDeposit holds the balance as a double, while the column is NUMERIC(19,2).
-    // Assumption: balances stay below 10^13, so every stored value converts to a double and back exactly.
+    // The legacy TimeDeposit holds the balance as a double, while the column is NUMERIC(15,2): at most 15 digits,
+    // which a double keeps exactly, so every stored balance converts to a double and back unchanged. A balance of
+    // 10^13 or more cannot be stored; the update then fails and rolls back (invalid input is not handled).
     private static TimeDeposit toDomain(TimeDepositEntity entity) {
         return new TimeDeposit(entity.getId(), entity.getPlanType(), entity.getBalance().doubleValue(), entity.getDays());
     }

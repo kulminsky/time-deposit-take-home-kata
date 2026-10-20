@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.context.annotation.Import;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.jdbc.Sql;
 
@@ -18,6 +19,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.groups.Tuple.tuple;
 
 // Runs against Postgres with the Flyway schema; Hibernate's ddl-auto=validate checks the entities on start-up.
@@ -69,6 +71,25 @@ class PersistenceAdapterIT {
         assertThat(balanceInDatabase(1)).isEqualByComparingTo("1001.66");
         assertThat(balanceInDatabase(2)).isEqualByComparingTo("1002.50");
         assertThat(balanceInDatabase(3)).isEqualByComparingTo("1000.00");
+    }
+
+    @Test
+    void storesTheLargestBalanceAndReadsItBackExactly() {
+        List<TimeDeposit> loaded = timeDeposits.findAllForUpdate();
+        loaded.get(0).setBalance(9_999_999_999_999.99);
+
+        timeDeposits.updateBalances(loaded.subList(0, 1));
+        entityManager.flush();
+        entityManager.clear();
+
+        assertThat(balanceInDatabase(1)).isEqualByComparingTo("9999999999999.99");
+        assertThat(timeDeposits.findAll().get(0).getBalance()).isEqualTo(9_999_999_999_999.99);
+    }
+
+    @Test
+    void balanceColumnRejects10ToThe13() {
+        assertThatExceptionOfType(DataIntegrityViolationException.class).isThrownBy(() -> jdbcTemplate.update(
+            "UPDATE \"timeDeposits\" SET \"balance\" = 10000000000000.00 WHERE \"id\" = 1"));
     }
 
     @Test
