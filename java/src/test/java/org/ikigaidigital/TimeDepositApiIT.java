@@ -94,6 +94,19 @@ class TimeDepositApiIT {
             .jsonPath("$[4].balance").isEqualTo(1008.35);
     }
 
+    // Assumption (see UpdateAllBalancesService): the update changes balances only, never days.
+    @Test
+    void updateKeepsTheDaysOfEveryDeposit() {
+        client.post().uri("/time-deposits/balance-updates").exchange().expectStatus().isNoContent();
+        client.post().uri("/time-deposits/balance-updates").exchange().expectStatus().isNoContent();
+
+        client.get().uri("/time-deposits")
+            .exchange()
+            .expectBody()
+            .jsonPath("$[*].days").isEqualTo(List.of(31, 365, 366, 45, 46))
+            .jsonPath("$[3].balance").isEqualTo(1000.00);  // premium, still 45 days: still no interest
+    }
+
     @Test
     void applicationHasExactlyTheTwoEndpointsOfTheContract() {
         List<String> applicationEndpoints = handlerMapping.getHandlerMethods().entrySet().stream()
