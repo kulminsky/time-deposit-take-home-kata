@@ -36,8 +36,10 @@ jobs:
 
       # The same `docker compose up` a reviewer runs without a JDK: the image builds and the API answers.
       - name: Docker Compose smoke test
+        # --wait returns once the containers run, before the app listens; until then the port can reset the
+        # connection instead of refusing it, so curl retries on every error, not only on a refused connection.
         run: |
           docker compose up --build --detach --wait
-          curl -fsS --retry 30 --retry-connrefused --retry-delay 2 http://localhost:8080/time-deposits \
+          curl -fsS --retry 30 --retry-all-errors --retry-delay 2 http://localhost:8080/time-deposits \
             || { docker compose logs; exit 1; }
           docker compose down -v
