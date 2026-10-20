@@ -24,6 +24,8 @@ docker compose up --build                                         # app + Postgr
 
 `compose.yaml` serves both runs: `docker compose up` starts `postgres` and `app`, while `spring-boot:run` starts only `postgres` because of `spring.docker.compose.start.arguments` in `application.yaml` (keep it, or both would use port 8080).
 
+All integration tests share one Postgres container (`TestcontainersConfiguration`), and some commit their data, so a new `*IT` must start by emptying the tables (`db/clean.sql` or a `@BeforeEach`).
+
 Maven wrapper (Maven 3.9.16), Spring Boot 4.1.1 parent, Java 17 (`release 17`). The Spring interface and DTOs are generated from `src/main/resources/static/openapi/time-deposits.yaml` at build time (`target/generated-sources/openapi`); change the contract, not generated code. No linter or formatter is configured.
 
 ## Rules
@@ -56,4 +58,6 @@ Maven wrapper (Maven 3.9.16), Spring Boot 4.1.1 parent, Java 17 (`release 17`). 
 ## Project decisions (from the repo owner)
 
 - Spring Boot 4.1.1 on a Java 17 baseline.
+- The balance update never changes `days`; it is kept up to date outside this application (assumption in `UpdateAllBalancesService`).
+- Money columns are `NUMERIC(15,2)`: the legacy `TimeDeposit` holds the balance as a `double`, which keeps 15 digits exactly. Don't widen them.
 - Leave `c#/`, `kotlin/`, `python/` and `typescript/` unchanged; they stay as the original kata.
