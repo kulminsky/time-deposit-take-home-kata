@@ -65,6 +65,12 @@
             <artifactId>postgresql</artifactId>
             <scope>runtime</scope>
         </dependency>
+        <!-- Local runs: starts Postgres from compose.yaml and connects to it. Skipped in tests, left out of the jar. -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-docker-compose</artifactId>
+            <optional>true</optional>
+        </dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -109,6 +115,12 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <!-- spring-boot:run loads the sample data (application-local.yaml). -->
+                    <profiles>
+                        <profile>local</profile>
+                    </profiles>
+                </configuration>
             </plugin>
             <!-- Generates the Spring interface and DTOs from the OpenAPI contract (contract first). -->
             <plugin>

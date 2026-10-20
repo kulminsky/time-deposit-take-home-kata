@@ -1,0 +1,5 @@
+# Profile for running the application on a developer machine (`./mvnw spring-boot:run` turns it on).
+spring:
+  flyway:
+    # Adds the sample deposits and withdrawals (V1_1) on top of the schema, so the API has data to show.
+    locations: classpath:db/migration,classpath:db/sample-data
