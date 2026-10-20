@@ -1,3 +1,18 @@
 spring:
   application:
     name: time-deposit
+  jpa:
+    open-in-view: false
+    hibernate:
+      # Flyway owns the schema; Hibernate only checks that the entities match it.
+      ddl-auto: validate
+      naming:
+        # Keep the camelCase table and column names from the README (Spring's default would use snake_case).
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+    properties:
+      hibernate:
+        # The camelCase names only exist in Postgres when quoted.
+        globally_quoted_identifiers: true
+        jdbc:
+          batch_size: 50
+        order_updates: true
