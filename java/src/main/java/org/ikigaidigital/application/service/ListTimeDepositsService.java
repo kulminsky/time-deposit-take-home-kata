@@ -22,6 +22,7 @@ public class ListTimeDepositsService implements ListTimeDepositsUseCase {
     }
 
     // Two queries (deposits, withdrawals) joined in memory instead of one query per deposit.
+    // Assumption: all deposits and their withdrawals fit in memory, so the list is not paged.
     // Reads never lock, so listing is not blocked by a running balance update; it shows the last committed balances.
     @Override
     @Transactional(readOnly = true)
