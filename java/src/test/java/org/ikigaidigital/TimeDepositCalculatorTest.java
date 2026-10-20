@@ -7,6 +7,7 @@ import org.junit.jupiter.params.provider.CsvSource;
 import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.groups.Tuple.tuple;
 
 /**
  * Characterization tests for {@link TimeDepositCalculator#updateBalance(List)}.
@@ -19,11 +20,10 @@ public class TimeDepositCalculatorTest {
 
     @Test
     public void updateBalance_Test() {
-        TimeDepositCalculator calc = new TimeDepositCalculator();
         List<TimeDeposit> plans = Arrays.asList(
             new TimeDeposit(1,"basic", 1234567.00, 45)
         );
-        calc.updateBalance(plans);
+        calculator.updateBalance(plans);
 
         assertThat(plans.get(0).getBalance()).isEqualTo(1235595.81);
     }
@@ -111,9 +111,9 @@ public class TimeDepositCalculatorTest {
         assertThat(deposits)
             .extracting(TimeDeposit::getId, TimeDeposit::getPlanType, TimeDeposit::getBalance, TimeDeposit::getDays)
             .containsExactly(
-                org.assertj.core.groups.Tuple.tuple(1, "basic", 1000.83, 31),
-                org.assertj.core.groups.Tuple.tuple(2, "student", 1000.0, 366),
-                org.assertj.core.groups.Tuple.tuple(3, "premium", 1004.17, 46));
+                tuple(1, "basic", 1000.83, 31),
+                tuple(2, "student", 1000.0, 366),
+                tuple(3, "premium", 1004.17, 46));
     }
 
     @Test
