@@ -1,0 +1,6 @@
+# The image is built from the Maven wrapper, pom.xml and src/ only (no local target/ or IDE files).
+*
+!.mvn
+!mvnw
+!pom.xml
+!src

@@ -1,6 +1,14 @@
 spring:
   application:
     name: time-deposit
+  docker:
+    compose:
+      start:
+        # `./mvnw spring-boot:run` (or the main class from an IDE) starts only Postgres from compose.yaml. The app
+        # service there is for `docker compose up` and would clash on port 8080. The Docker Compose support is
+        # not in the jar and is skipped in tests, so this has no effect there.
+        arguments:
+          - postgres
   jpa:
     open-in-view: false
     hibernate:

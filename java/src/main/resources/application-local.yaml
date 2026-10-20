@@ -1,4 +1,4 @@
-# Profile for running the application on a developer machine (`./mvnw spring-boot:run` turns it on).
+# Profile for running the application locally: `./mvnw spring-boot:run` and `docker compose up` turn it on.
 spring:
   flyway:
     # Adds the sample deposits and withdrawals (V1_1) on top of the schema, so the API has data to show.

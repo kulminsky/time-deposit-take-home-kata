@@ -1,6 +1,9 @@
-# Local Postgres for `./mvnw spring-boot:run`. Spring Boot (spring-boot-docker-compose) starts it on start-up,
-# stops it on shutdown and connects to it; no datasource settings are needed.
-# Data survives restarts; `docker compose down -v` removes the container and its data volume.
+# `docker compose up` builds the application image (Dockerfile, no local JDK needed) and runs it with Postgres
+# on http://localhost:8080.
+# `./mvnw spring-boot:run` uses this file too: Spring Boot (spring-boot-docker-compose) starts only the postgres
+# service (spring.docker.compose.start.arguments in application.yaml), connects to it and stops it on shutdown.
+# Both ways share the same data volume; run one or the other, since both use port 8080.
+# Data survives restarts; `docker compose down -v` removes the containers and the data volume.
 # The credentials are for this local container only.
 name: time-deposit
 services:
@@ -14,10 +17,31 @@ services:
     ports:
       # Random host port, so it does not clash with a local Postgres; Spring Boot reads it from Docker.
       - '5432'
+    healthcheck:
+      # Checks over TCP on purpose: on first start the image initialises the database with a temporary server
+      # that listens on the Unix socket only, so a socket check would report ready too early.
+      test: ['CMD', 'pg_isready', '-h', '127.0.0.1', '-U', 'timedeposit', '-d', 'timedeposit']
+      interval: 2s
+      timeout: 5s
+      retries: 30
     volumes:
       # A named volume (Postgres 18 images keep their data under /var/lib/postgresql), so restarts do not
       # leave anonymous volumes behind.
       - postgres-data:/var/lib/postgresql
+
+  app:
+    build: .
+    environment:
+      # Same sample data as `./mvnw spring-boot:run` (application-local.yaml).
+      SPRING_PROFILES_ACTIVE: local
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/timedeposit
+      SPRING_DATASOURCE_USERNAME: timedeposit
+      SPRING_DATASOURCE_PASSWORD: timedeposit
+    ports:
+      - '8080:8080'
+    depends_on:
+      postgres:
+        condition: service_healthy
 
 volumes:
   postgres-data:
