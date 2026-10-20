@@ -11,7 +11,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Characterization tests for {@link TimeDepositCalculator#updateBalance(List)}.
  * Every expected value was taken from running the original (pre-refactoring) calculator
- * and is compared as an exact double.
+ * and is compared as an exact double. The one exception is the null plan type test, a deliberate change.
  */
 public class TimeDepositCalculatorTest {
 
@@ -58,6 +58,20 @@ public class TimeDepositCalculatorTest {
     @CsvSource({"Basic", "STUDENT", "Premium", "gold", "''", "' basic'"})
     void matchesPlanTypeExactlyAndCaseSensitively(String planType) {
         assertThat(balanceAfterUpdate(planType, 1000.00, 100)).isEqualTo(1000.0);
+    }
+
+    // Deliberate change, not a value from the original calculator (see InterestRules): a null plan type gets no
+    // interest and the rest of the list is still updated. The original threw a NullPointerException here and
+    // left the rest of the list unchanged.
+    @Test
+    void givesNoInterestToANullPlanTypeAndUpdatesTheRestOfTheList() {
+        List<TimeDeposit> deposits = List.of(
+            new TimeDeposit(1, null, 1000.00, 100),
+            new TimeDeposit(2, "basic", 1000.00, 31));
+
+        calculator.updateBalance(deposits);
+
+        assertThat(deposits).extracting(TimeDeposit::getBalance).containsExactly(1000.0, 1000.83);
     }
 
     // The interest is rounded from its exact binary double value (new BigDecimal(double)).

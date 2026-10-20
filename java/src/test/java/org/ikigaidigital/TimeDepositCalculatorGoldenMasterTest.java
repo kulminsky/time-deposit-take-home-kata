@@ -7,10 +7,12 @@ import java.util.List;
 import java.util.Random;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatNullPointerException;
 
 /**
  * Golden master: {@link TimeDepositCalculator} must give bit-for-bit the same balances as the
- * frozen {@link LegacyTimeDepositCalculator} for any deposit, including repeated monthly updates.
+ * frozen {@link LegacyTimeDepositCalculator} for any deposit with a plan type, including repeated monthly updates.
+ * The one deliberate difference, a {@code null} plan type, is pinned by its own test.
  */
 class TimeDepositCalculatorGoldenMasterTest {
 
@@ -58,6 +60,29 @@ class TimeDepositCalculatorGoldenMasterTest {
         }
 
         assertSameBalancesForEachMonth(actual, expected);
+    }
+
+    // The one deliberate difference (see InterestRules): a null plan type gets no interest. Up to day 30 the
+    // legacy calculator gave none either; from day 31 it threw a NullPointerException.
+    @Test
+    void nullPlanTypeGetsNoInterestWhereTheLegacyCalculatorThrew() {
+        TimeDepositCalculator calculator = new TimeDepositCalculator();
+        LegacyTimeDepositCalculator legacyCalculator = new LegacyTimeDepositCalculator();
+        for (int days = -1; days <= 800; days++) {
+            for (double balance : SAMPLE_BALANCES) {
+                TimeDeposit actual = new TimeDeposit(1, null, balance, days);
+                TimeDeposit expected = new TimeDeposit(1, null, balance, days);
+
+                calculator.updateBalance(List.of(actual));
+                if (days <= 30) {
+                    legacyCalculator.updateBalance(List.of(expected));
+                } else {
+                    assertThatNullPointerException().isThrownBy(() -> legacyCalculator.updateBalance(List.of(expected)));
+                }
+
+                assertThat(actual.getBalance()).isEqualTo(expected.getBalance());
+            }
+        }
     }
 
     private static double randomBalance(Random random) {
