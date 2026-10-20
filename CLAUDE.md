@@ -6,20 +6,22 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 XA Bank "time deposit" refactoring kata (take-home). The same starting code exists in five languages (`java/`, `kotlin/`, `c#/`, `python/`, `typescript/`); the solution is built in `java/` only. The full task is in `README.md`.
 
-The starting point is tiny: `TimeDeposit` (plain data class) and `TimeDepositCalculator.updateBalance(List<TimeDeposit>)` in package `org.ikigaidigital`. There is no framework, database or API yet; those have to be added.
+The legacy code is `TimeDeposit` (plain data class) and `TimeDepositCalculator.updateBalance(List<TimeDeposit>)` in package `org.ikigaidigital`. The solution around it is a Spring Boot app with a hexagonal layout (`domain`, `application`, `adapter.in.web`, `adapter.out.persistence`, `config`); `java/README.md` describes it, and `HexagonalArchitectureTest` (ArchUnit) enforces the boundaries.
 
 ## Commands (Java)
 
 Run from `java/`:
 
 ```bash
-mvn test                                                       # all tests
-mvn test -Dtest=TimeDepositCalculatorTest                      # one class
-mvn test -Dtest=TimeDepositCalculatorTest#updateBalance_Test   # one method
-mvn package
+./mvnw test                                                       # unit tests (no Docker)
+./mvnw test -Dtest=TimeDepositCalculatorTest                      # one class
+./mvnw test -Dtest=TimeDepositCalculatorTest#updateBalance_Test   # one method
+./mvnw verify                                                     # unit + integration tests (*IT, Testcontainers, needs Docker)
+./mvnw verify -Dtest=none -Dsurefire.failIfNoSpecifiedTests=false -Dit.test=TimeDepositApiIT   # one IT
+./mvnw spring-boot:run                                            # run locally (Docker Compose Postgres + sample data)
 ```
 
-Plain Maven project targeting Java 17, JUnit 5 + AssertJ. No Maven wrapper, linter or formatter is configured yet.
+Maven wrapper (Maven 3.9.16), Spring Boot 4.1.1 parent, Java 17 (`release 17`). The Spring interface and DTOs are generated from `src/main/resources/static/openapi/time-deposits.yaml` at build time (`target/generated-sources/openapi`); change the contract, not generated code. No linter or formatter is configured.
 
 ## Rules
 
@@ -40,7 +42,7 @@ Plain Maven project targeting Java 17, JUnit 5 + AssertJ. No Maven wrapper, lint
 
 ## Legacy behaviour to preserve (`TimeDepositCalculator.updateBalance`)
 
-The existing test is a placeholder (`assertThat(1).isEqualTo(1)`) and checks nothing, so pin down the current behaviour with tests before refactoring.
+`TimeDepositCalculatorTest` pins these results (values taken from the original code), and `TimeDepositCalculatorGoldenMasterTest` compares the calculator bit for bit with `LegacyTimeDepositCalculator`, a frozen copy of the original. Never edit that copy; keep both tests green.
 
 - No interest unless `days > 30`.
 - Plan is matched by exact, case-sensitive string: `"basic"` 1%/yr; `"student"` 3%/yr only while `days < 366`; `"premium"` 5%/yr only when `days > 45`. Any other plan gets 0 interest. Monthly interest = `balance * rate / 12`.
