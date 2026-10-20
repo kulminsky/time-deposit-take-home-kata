@@ -1,3 +1,3 @@
--- Removes all rows; used before each end-to-end test, which commits its data.
+-- Removes all rows. The integration tests share one database, so each test starts from empty tables.
 DELETE FROM "withdrawals";
 DELETE FROM "timeDeposits";

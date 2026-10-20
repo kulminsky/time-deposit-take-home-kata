@@ -23,11 +23,12 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.groups.Tuple.tuple;
 
 // Runs against Postgres with the Flyway schema; Hibernate's ddl-auto=validate checks the entities on start-up.
-// Each test runs in a transaction that is rolled back.
+// Each test runs in a transaction that is rolled back. clean.sql first removes the rows that other integration
+// tests committed to the shared database.
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Import({TestcontainersConfiguration.class, TimeDepositPersistenceAdapter.class, WithdrawalPersistenceAdapter.class})
-@Sql("/db/test-data.sql")
+@Sql({"/db/clean.sql", "/db/test-data.sql"})
 class PersistenceAdapterIT {
 
     @Autowired
