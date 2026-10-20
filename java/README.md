@@ -97,6 +97,7 @@ cd java
 
 Adds the integration tests (`*IT`) against Postgres in Docker (Testcontainers): persistence, row locking
 and end-to-end HTTP tests, including a check that the application has exactly the two endpoints of the contract.
+All integration tests share one Postgres container and empty the tables before each test.
 
 ## Design
 
@@ -130,7 +131,8 @@ org.ikigaidigital
   combining rules for one plan (a base rate plus a bonus) means a composite rule class.
 - **Concurrent updates.** The balance update reads all deposits with `SELECT ... FOR NO KEY UPDATE` (ordered by
   id) and writes them in the same transaction. A second update waits for the first to commit and then adds its
-  month on top, so no update is lost; reads are never blocked. `BalanceUpdateLockingIT` proves this.
+  month on top, so no update is lost; reads are never blocked. The locked read and the write only run inside a
+  transaction (`MANDATORY`), so a balance is never written without the lock. `BalanceUpdateLockingIT` proves this.
 - **Database.** Flyway creates the README tables with their exact camelCase names (`"timeDeposits"`,
   `"withdrawals"`, quoted in Postgres). Money columns are `NUMERIC(15,2)`: at most 15 digits, which a `double`
   keeps exactly.
