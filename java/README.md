@@ -118,7 +118,8 @@ org.ikigaidigital
 - **Legacy behaviour kept.** Before the refactoring, characterization tests pinned the exact results of the
   original calculator, and a golden-master test compares the refactored calculator bit for bit with a frozen
   copy of the original (`LegacyTimeDepositCalculator`) over 100,000 random deposits and 12 monthly updates.
-  The double arithmetic and the `new BigDecimal(double)` HALF_UP rounding are unchanged.
+  The double arithmetic and the `new BigDecimal(double)` HALF_UP rounding are unchanged. The one deliberate
+  change is a `null` plan type (see Assumptions).
 - **Extensible interest rules.** The if/else chain became one `InterestRule` per plan type
   (`BasicPlanInterestRule`, `StudentPlanInterestRule`, `PremiumPlanInterestRule`), looked up by exact plan type
   in `InterestRules`. A new plan is a new rule class registered in `InterestRules.defaults()`; the calculator
@@ -144,4 +145,6 @@ Each one is also written as a comment in the code where it applies.
   listed by id.
 - Swagger UI and the contract file are static documentation, not API endpoints. springdoc is not used, because
   its Swagger UI needs its own `/v3/api-docs` document generated from the code.
-- Invalid input is not handled (the task says so); a `null` plan type gets no interest.
+- Invalid input is not handled (the task says so). A `null` plan type gets no interest and the rest of the list
+  is still updated; the original calculator threw a `NullPointerException` for it after day 30. This is the one
+  deliberate change to the calculator's behaviour, and the golden-master test pins it.

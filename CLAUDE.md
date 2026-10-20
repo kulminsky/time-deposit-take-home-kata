@@ -51,6 +51,7 @@ Maven wrapper (Maven 3.9.16), Spring Boot 4.1.1 parent, Java 17 (`release 17`). 
 - Plan is matched by exact, case-sensitive string: `"basic"` 1%/yr; `"student"` 3%/yr only while `days < 366`; `"premium"` 5%/yr only when `days > 45`. Any other plan gets 0 interest. Monthly interest = `balance * rate / 12`.
 - Interest is computed in `double`, rounded with `new BigDecimal(double).setScale(2, HALF_UP)` (not `BigDecimal.valueOf`), then added to the `double` balance. Switching to `BigDecimal` arithmetic or `valueOf` can change results at rounding edges, so keep the exact arithmetic or prove equality with a golden-master test.
 - It mutates the deposits in the passed list (`setBalance`) and returns nothing.
+- One deliberate change, accepted by the owner: a `null` plan type gets no interest and the rest of the list is still updated (the original threw a `NullPointerException` once `days > 30`). Both test classes pin it; don't "fix" it back.
 
 ## Project decisions (from the repo owner)
 
