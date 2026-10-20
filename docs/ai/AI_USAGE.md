@@ -77,7 +77,7 @@ entries were added by hand because they were sent before the hook existed. Two t
 | Characterization and golden-master tests | Written and mutation-checked by the agent | Required "pin first, then refactor" |
 | Production code (domain, application, adapters, config, contract, migrations) | Written by the agent | Set the requirements through the approved plan |
 | Integration tests (Testcontainers), ArchUnit rules | Written by the agent | |
-| CI workflow, Docker Compose, docs | Written by the agent | |
+| CI workflow, Dockerfile and Docker Compose, docs | Written by the agent | |
 | Pushing to GitHub | Not allowed for the agent (deny rule) | Pushes |
 
 Why an agent: most of the work is careful, mechanical and easy to verify (tests that pin exact doubles,

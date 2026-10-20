@@ -19,7 +19,10 @@ Run from `java/`:
 ./mvnw verify                                                     # unit + integration tests (*IT, Testcontainers, needs Docker)
 ./mvnw verify -Dtest=none -Dsurefire.failIfNoSpecifiedTests=false -Dit.test=TimeDepositApiIT   # one IT
 ./mvnw spring-boot:run                                            # run locally (Docker Compose Postgres + sample data)
+docker compose up --build                                         # app + Postgres in Docker, no local JDK (Dockerfile)
 ```
+
+`compose.yaml` serves both runs: `docker compose up` starts `postgres` and `app`, while `spring-boot:run` starts only `postgres` because of `spring.docker.compose.start.arguments` in `application.yaml` (keep it, or both would use port 8080).
 
 Maven wrapper (Maven 3.9.16), Spring Boot 4.1.1 parent, Java 17 (`release 17`). The Spring interface and DTOs are generated from `src/main/resources/static/openapi/time-deposits.yaml` at build time (`target/generated-sources/openapi`); change the contract, not generated code. No linter or formatter is configured.
 

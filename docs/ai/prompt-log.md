@@ -28,3 +28,9 @@ Create a code-reviewer subagent that reviews my changes against the rules in CLA
 
 Read README.md and the java/ code. Plan the full solution: Spring Boot 4.1.1, Java 17, Postgres, Flyway, JPA, hexagonal, OpenAPI contract-first, Testcontainers, ArchUnit. Start with tests that pin the current calculator results, then refactor.
 
+
+## 2026-10-20 19:50:16
+
+Add Docker so anyone can run the app with 'docker compose up'. 
+No local JDK needed.
+

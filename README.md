@@ -10,10 +10,11 @@ are unchanged.
 
 ```bash
 cd java
-./mvnw spring-boot:run
+docker compose up
 ```
 
-Then open http://localhost:8080/swagger-ui/index.html (Docker must be running).
+Then open http://localhost:8080/swagger-ui/index.html. Only Docker is needed; the image is built inside Docker.
+With a JDK 17+, `./mvnw spring-boot:run` (in `java/`, Docker running) starts the same application.
 
 - How to run, test and call the two endpoints with Swagger UI, design and assumptions: [`java/README.md`](java/README.md)
 - AI tools, configuration, prompts and which parts were AI-assisted: [`docs/ai/AI_USAGE.md`](docs/ai/AI_USAGE.md)

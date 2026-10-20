@@ -14,21 +14,39 @@ The API contract is [`src/main/resources/static/openapi/time-deposits.yaml`](src
 
 ## Requirements
 
-- JDK 17 or newer (the build compiles for Java 17).
-- Docker: local runs start Postgres with Docker Compose, and the integration tests use Testcontainers.
-- No local Maven needed: use the wrapper `./mvnw` (Maven 3.9.16).
+- To run the application: Docker with Docker Compose only. No JDK needed.
+- To build and test it: JDK 17 or newer (the build compiles for Java 17) and Docker (local runs start Postgres
+  with Docker Compose, and the integration tests use Testcontainers). No local Maven needed: use the wrapper
+  `./mvnw` (Maven 3.9.16).
 
 ## Run it
+
+### With Docker only
+
+```bash
+cd java
+docker compose up
+```
+
+The first start builds the application image from the [`Dockerfile`](Dockerfile) (Maven and a JDK run inside
+Docker), then starts Postgres and the application from [`compose.yaml`](compose.yaml). Flyway applies the
+migrations plus sample data (`local` profile), and the API is served on http://localhost:8080.
+Ctrl+C stops both containers. After changing the code, run `docker compose up --build` to rebuild the image.
+
+### With a JDK
 
 ```bash
 cd java
 ./mvnw spring-boot:run
 ```
 
-This starts Postgres from [`compose.yaml`](compose.yaml) (Spring Boot's Docker Compose support), applies the
-Flyway migrations plus sample data (`local` profile), and serves the API on http://localhost:8080.
-The Postgres container is stopped when the application stops and keeps its data in a Docker volume;
-`docker compose down -v` (in `java/`) removes both, so the next start begins again from the sample data.
+This starts only the Postgres service from [`compose.yaml`](compose.yaml) (Spring Boot's Docker Compose support),
+applies the same migrations and sample data, and serves the API on http://localhost:8080. The Postgres container
+is stopped when the application stops.
+
+Both ways use port 8080, so run one at a time. They share the same Postgres data volume, so the data survives
+restarts; `docker compose down -v` (in `java/`) removes the containers and the volume, and the next start begins
+again from the sample data.
 
 ## Call the endpoints with Swagger UI
 
