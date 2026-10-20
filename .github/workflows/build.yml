@@ -1,0 +1,35 @@
+name: Java build
+
+on:
+  push:
+    paths:
+      - 'java/**'
+      - '.github/workflows/build.yml'
+  pull_request:
+    paths:
+      - 'java/**'
+      - '.github/workflows/build.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    # Docker is available on ubuntu-latest, so the Testcontainers integration tests run here too.
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: java
+    steps:
+      - uses: actions/checkout@v7
+
+      # Java 17 is the baseline of the project (local builds may use a newer JDK with release 17).
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+          cache-dependency-path: java/pom.xml
+
+      - name: Unit tests, integration tests and package
+        run: ./mvnw -B verify
