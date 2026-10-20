@@ -10,7 +10,7 @@ repository, how the work was done, and which parts were AI-assisted.
 | [Claude Code](https://claude.com/claude-code), desktop app (Code tab) | Agent that read the code, planned, wrote code and tests, ran Maven and Docker, and made the commits |
 | Claude Opus 5.5 (`claude-opus-5-5`) | Model behind the agent |
 | Claude Code plan mode | Read-only planning; the plan was approved (and corrected once) before any code changed |
-| Claude Code subagent `code-reviewer` | Read-only review against the project rules before larger commits |
+| Claude Code subagent `code-reviewer` | Review against the project rules before larger commits; it reports and never edits or commits |
 | Built-in browser of the Claude desktop app | Checking Swagger UI of the locally running application |
 
 No other LLMs, code generators or agent frameworks were used. The only other code generator is
@@ -25,14 +25,17 @@ All of it is committed, so the setup is reproducible: open the repository in Cla
   assumptions as code comments; small Conventional Commits; never push. It also describes the legacy behaviour
   in detail (double arithmetic, `new BigDecimal(double)` rounding), so the agent pins it with tests before refactoring.
 - [`.claude/settings.json`](../../.claude/settings.json):
-  - `deny` rules that block editing `TimeDeposit.java`, `git push` and `git reset --hard`, as a hard guard behind the
-    rules in `CLAUDE.md`;
+  - `deny` rules that stop the agent's file-edit tools from changing `TimeDeposit.java` and block `git push` and
+    `git reset --hard`. They back up the rules in `CLAUDE.md` but are not a complete guard: a shell command could
+    still change the file, so the `code-reviewer` agent also checks that it is unchanged;
   - a `UserPromptSubmit` hook (`jq`) that appends each of the developer's prompts with its date and time to
     [`prompt-log.md`](prompt-log.md) and skips automated messages (subagent reports, background task notifications).
-- [`.claude/agents/code-reviewer.md`](../../.claude/agents/code-reviewer.md): a read-only reviewer subagent. It checks
+- [`.claude/agents/code-reviewer.md`](../../.claude/agents/code-reviewer.md): a reviewer subagent. It checks
   the changes against `CLAUDE.md` (unchanged `TimeDeposit`, unchanged results, exactly two endpoints, untouched
   other languages, assumption comments, commit style), runs the full build (`./mvnw -q verify`, including the
-  Testcontainers integration tests) and reports findings by severity.
+  Testcontainers integration tests) and reports findings by severity. Its instructions say to only read and
+  report, never edit, stage or commit. That is not enforced: it has Bash for git and the build, and the build
+  writes `target/` and starts containers.
 
 ## Prompts
 
