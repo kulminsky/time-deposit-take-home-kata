@@ -1,5 +1,25 @@
 # Time Deposit Refactoring Kata - Take-Home Assignment
 
+## Solution
+
+[![Java build](https://github.com/kulminsky/time-deposit-take-home-kata/actions/workflows/build.yml/badge.svg)](https://github.com/kulminsky/time-deposit-take-home-kata/actions/workflows/build.yml)
+
+The solution is in [`java/`](java): Spring Boot 4.1.1 on Java 17, Postgres with Flyway and JPA, hexagonal
+architecture, a contract-first OpenAPI API with Swagger UI, Testcontainers and ArchUnit. The other language folders
+are unchanged.
+
+```bash
+cd java
+./mvnw spring-boot:run
+```
+
+Then open http://localhost:8080/swagger-ui/index.html (Docker must be running).
+
+- How to run, test and call the two endpoints with Swagger UI, design and assumptions: [`java/README.md`](java/README.md)
+- AI tools, configuration, prompts and which parts were AI-assisted: [`docs/ai/AI_USAGE.md`](docs/ai/AI_USAGE.md)
+
+---
+
 ## XA Bank Time Deposit
 
 ### Context
