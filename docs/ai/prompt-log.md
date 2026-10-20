@@ -52,3 +52,18 @@ Fix 1, 2, 3, 5, and 9, plus the tests, Dockerfile, AI_USAGE wording, and the in-
 2 - keep days as is and write it as an assumption.
 9 - a short note in java/README is enough.
 
+
+## 2026-10-20 21:49:43
+
+Leave the CI workflow as it is.
+
+
+## 2026-10-20 21:54:46
+
+Use --retry-all-errors in the CI smoke test after all
+
+
+## 2026-10-20 22:04:42
+
+Update the docs to match the latest changes, then commit everything by following the style.
+
