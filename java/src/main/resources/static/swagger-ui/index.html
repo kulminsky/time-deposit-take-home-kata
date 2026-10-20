@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>XA Bank Time Deposit API</title>
+    <link rel="stylesheet" href="../webjars/swagger-ui/swagger-ui.css">
+</head>
+<body>
+<div id="swagger-ui"></div>
+<script src="../webjars/swagger-ui/swagger-ui-bundle.js"></script>
+<script>
+    // Contract first: Swagger UI shows the contract file itself, not a document generated from the code.
+    // This page and the contract are static files (documentation), not API endpoints.
+    window.ui = SwaggerUIBundle({
+        url: '../openapi/time-deposits.yaml',
+        dom_id: '#swagger-ui'
+    });
+</script>
+</body>
+</html>
