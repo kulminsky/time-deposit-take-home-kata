@@ -7,8 +7,9 @@ COPY .mvn .mvn
 COPY mvnw pom.xml ./
 COPY src src
 # The cache mount keeps the Maven repository (and the wrapper's Maven download) between builds.
-# Tests are not run here: the integration tests need Docker (Testcontainers). `./mvnw verify` and CI run them.
-RUN --mount=type=cache,target=/root/.m2 ./mvnw -B -ntp package -DskipTests
+# Tests are not compiled or run here: the integration tests need Docker (Testcontainers). `./mvnw verify` and CI
+# run them.
+RUN --mount=type=cache,target=/root/.m2 ./mvnw -B -ntp package -Dmaven.test.skip=true
 
 # Runtime stage: only a JRE and the executable jar.
 FROM eclipse-temurin:17.0.20.1_1-jre-noble
